@@ -1,0 +1,8 @@
+# Autodetect text files
+* text=auto
+
+# Use CRLF on Windows files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.txt text eol=crlf
