@@ -27,11 +27,16 @@ var memUsageDesc = prometheus.NewDesc("lxd_container_mem_usage",
 	"Container Memory Usage",
 	[]string{"container_name"}, nil,
 )
+var memUsagePeakDesc = prometheus.NewDesc("lxd_container_mem_usage_peak",
+	"Container Memory Usage Peak",
+	[]string{"container_name"}, nil,
+)
 
 // Describe ...
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- cpuUsageDesc
 	ch <- memUsageDesc
+	ch <- memUsagePeakDesc
 }
 
 // Collect ...
@@ -54,5 +59,8 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 			cpuUsageDesc, prometheus.GaugeValue, float64(state.CPU.Usage), name)
 		ch <- prometheus.MustNewConstMetric(
 			memUsageDesc, prometheus.GaugeValue, float64(state.Memory.Usage), name)
+		ch <- prometheus.MustNewConstMetric(
+			memUsagePeakDesc, prometheus.GaugeValue, float64(state.Memory.UsagePeak),
+			name)
 	}
 }

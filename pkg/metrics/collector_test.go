@@ -154,3 +154,18 @@ func Example_collector_memUsage() {
 	// # TYPE lxd_container_mem_usage gauge
 	// lxd_container_mem_usage{container_name="box0"} 30
 }
+
+func Example_collector_memUsagePeak() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Memory: lxdapi.ContainerStateMemory{
+			UsagePeak: 70,
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_mem_usage_peak")
+	// Output:
+	// # HELP lxd_container_mem_usage_peak Container Memory Usage Peak
+	// # TYPE lxd_container_mem_usage_peak gauge
+	// lxd_container_mem_usage_peak{container_name="box0"} 70
+}
