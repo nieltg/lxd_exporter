@@ -212,3 +212,16 @@ func Example_collector_processCount() {
 	// # TYPE lxd_container_process_count gauge
 	// lxd_container_process_count{container_name="box0"} 120
 }
+
+func Example_collector_containerPID() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Pid: 90,
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_pid")
+	// Output:
+	// # HELP lxd_container_pid Container PID
+	// # TYPE lxd_container_pid gauge
+	// lxd_container_pid{container_name="box0"} 90
+}
