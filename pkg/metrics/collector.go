@@ -39,6 +39,10 @@ var swapUsagePeakDesc = prometheus.NewDesc("lxd_container_swap_usage_peak",
 	"Container Swap Usage Peak",
 	[]string{"container_name"}, nil,
 )
+var processCountDesc = prometheus.NewDesc("lxd_container_process_count",
+	"Container number of process Running",
+	[]string{"container_name"}, nil,
+)
 
 // Describe ...
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
@@ -47,6 +51,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- memUsagePeakDesc
 	ch <- swapUsageDesc
 	ch <- swapUsagePeakDesc
+	ch <- processCountDesc
 }
 
 // Collect ...
@@ -78,5 +83,7 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			swapUsagePeakDesc, prometheus.GaugeValue, float64(
 				state.Memory.SwapUsagePeak), name)
+		ch <- prometheus.MustNewConstMetric(
+			processCountDesc, prometheus.GaugeValue, float64(state.Processes), name)
 	}
 }

@@ -199,3 +199,16 @@ func Example_collector_swapUsagePeak() {
 	// # TYPE lxd_container_swap_usage_peak gauge
 	// lxd_container_swap_usage_peak{container_name="box0"} 20
 }
+
+func Example_collector_processCount() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Processes: 120,
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_process_count")
+	// Output:
+	// # HELP lxd_container_process_count Container number of process Running
+	// # TYPE lxd_container_process_count gauge
+	// lxd_container_process_count{container_name="box0"} 120
+}
