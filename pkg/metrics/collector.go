@@ -98,7 +98,11 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			containerPIDDesc, prometheus.GaugeValue, float64(state.Pid), name)
 
+		runningStatus := 0
+		if state.Status == "Running" {
+			runningStatus = 1
+		}
 		ch <- prometheus.MustNewConstMetric(
-			runningStatusDesc, prometheus.GaugeValue, 1, name)
+			runningStatusDesc, prometheus.GaugeValue, float64(runningStatus), name)
 	}
 }

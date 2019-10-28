@@ -238,3 +238,16 @@ func Example_collector_runningStatus() {
 	// # TYPE lxd_container_running_status gauge
 	// lxd_container_running_status{container_name="box0"} 1
 }
+
+func Example_collector_runningStatus_notRunning() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Status: "Stopped",
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_running_status")
+	// Output:
+	// # HELP lxd_container_running_status Container Running Status
+	// # TYPE lxd_container_running_status gauge
+	// lxd_container_running_status{container_name="box0"} 0
+}
