@@ -25,6 +25,11 @@ func (collector *collector) Describe(c chan<- *prometheus.Desc) {
 
 // Collect ...
 func (collector *collector) Collect(c chan<- prometheus.Metric) {
-	_, err := collector.server.GetContainerNames()
+	names, err := collector.server.GetContainerNames()
 	collector.logger.Printf("Can't query container names: %s", err)
+
+	if err != nil {
+		return
+	}
+	collector.server.GetContainerState(names[0])
 }
