@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	lxdapi "github.com/lxc/lxd/shared/api"
 	mockclient "github.com/nieltg/lxd_exporter/test/mock_client"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -37,7 +38,8 @@ func Test_collector_Collect_queryContainerState(t *testing.T) {
 	logger := log.New(os.Stdout, "lxd_exporter: ", 0)
 	server := mockclient.NewMockInstanceServer(controller)
 	server.EXPECT().GetContainerNames().Return([]string{"box0"}, nil).AnyTimes()
-	server.EXPECT().GetContainerState("box0")
+	server.EXPECT().GetContainerState("box0").Return(
+		&lxdapi.ContainerState{}, "", nil)
 
 	ch := make(chan prometheus.Metric)
 	go drain(ch)
@@ -54,8 +56,10 @@ func Test_collector_Collect_queryContainerStates(t *testing.T) {
 		"box0",
 		"box1",
 	}, nil).AnyTimes()
-	server.EXPECT().GetContainerState("box0")
-	server.EXPECT().GetContainerState("box1")
+	server.EXPECT().GetContainerState("box0").Return(
+		&lxdapi.ContainerState{}, "", nil)
+	server.EXPECT().GetContainerState("box1").Return(
+		&lxdapi.ContainerState{}, "", nil)
 
 	ch := make(chan prometheus.Metric)
 	go drain(ch)
