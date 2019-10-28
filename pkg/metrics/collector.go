@@ -31,5 +31,7 @@ func (collector *collector) Collect(c chan<- prometheus.Metric) {
 	if err != nil {
 		return
 	}
-	collector.server.GetContainerState(names[0])
+	for _, name := range names {
+		collector.server.GetContainerState(name)
+	}
 }

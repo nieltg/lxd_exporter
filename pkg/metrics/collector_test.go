@@ -33,3 +33,18 @@ func Test_collector_Collect_queryContainerState(t *testing.T) {
 
 	NewCollector(logger, server).Collect(make(chan prometheus.Metric))
 }
+
+func Test_collector_Collect_queryContainerStates(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	logger := log.New(os.Stdout, "lxd_exporter: ", 0)
+	server := mockclient.NewMockInstanceServer(controller)
+	server.EXPECT().GetContainerNames().Return([]string{
+		"box0",
+		"box1",
+	}, nil).AnyTimes()
+	server.EXPECT().GetContainerState("box0")
+	server.EXPECT().GetContainerState("box1")
+
+	NewCollector(logger, server).Collect(make(chan prometheus.Metric))
+}
