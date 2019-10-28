@@ -11,6 +11,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+func drain(ch <-chan prometheus.Metric) {
+	for range ch {
+	}
+}
+
 func Example_collector_Collect_containerNamesError() {
 	controller := gomock.NewController(nil)
 	defer controller.Finish()
@@ -18,7 +23,10 @@ func Example_collector_Collect_containerNamesError() {
 	server := mockclient.NewMockInstanceServer(controller)
 	server.EXPECT().GetContainerNames().Return(nil, fmt.Errorf("fail")).AnyTimes()
 
-	NewCollector(logger, server).Collect(make(chan prometheus.Metric))
+	ch := make(chan prometheus.Metric)
+	go drain(ch)
+	NewCollector(logger, server).Collect(ch)
+	close(ch)
 	// Output:
 	// lxd_exporter: Can't query container names: fail
 }
@@ -31,7 +39,10 @@ func Test_collector_Collect_queryContainerState(t *testing.T) {
 	server.EXPECT().GetContainerNames().Return([]string{"box0"}, nil).AnyTimes()
 	server.EXPECT().GetContainerState("box0")
 
-	NewCollector(logger, server).Collect(make(chan prometheus.Metric))
+	ch := make(chan prometheus.Metric)
+	go drain(ch)
+	NewCollector(logger, server).Collect(ch)
+	close(ch)
 }
 
 func Test_collector_Collect_queryContainerStates(t *testing.T) {
@@ -46,7 +57,10 @@ func Test_collector_Collect_queryContainerStates(t *testing.T) {
 	server.EXPECT().GetContainerState("box0")
 	server.EXPECT().GetContainerState("box1")
 
-	NewCollector(logger, server).Collect(make(chan prometheus.Metric))
+	ch := make(chan prometheus.Metric)
+	go drain(ch)
+	NewCollector(logger, server).Collect(ch)
+	close(ch)
 }
 
 func Example_collector_Collect_containerStateError() {
@@ -58,7 +72,10 @@ func Example_collector_Collect_containerStateError() {
 	server.EXPECT().GetContainerState(gomock.Any()).Return(
 		nil, "", fmt.Errorf("fail")).AnyTimes()
 
-	NewCollector(logger, server).Collect(make(chan prometheus.Metric))
+	ch := make(chan prometheus.Metric)
+	go drain(ch)
+	NewCollector(logger, server).Collect(ch)
+	close(ch)
 	// Output:
 	// lxd_exporter: Can't query container state for `box0`: fail
 }
