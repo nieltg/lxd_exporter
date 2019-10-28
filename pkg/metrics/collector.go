@@ -30,7 +30,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect ...
-func (collector *collector) Collect(c chan<- prometheus.Metric) {
+func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	names, err := collector.server.GetContainerNames()
 	if err != nil {
 		collector.logger.Printf("Can't query container names: %s", err)
@@ -38,8 +38,14 @@ func (collector *collector) Collect(c chan<- prometheus.Metric) {
 	}
 
 	for _, name := range names {
-		_, _, err = collector.server.GetContainerState(name)
-		collector.logger.Printf(
-			"Can't query container state for `%s`: %s", name, err)
+		state, _, err := collector.server.GetContainerState(name)
+		if err != nil {
+			collector.logger.Printf(
+				"Can't query container state for `%s`: %s", name, err)
+			break
+		}
+
+		ch <- prometheus.MustNewConstMetric(
+			cpuUsageDesc, prometheus.GaugeValue, float64(state.CPU.Usage), name)
 	}
 }

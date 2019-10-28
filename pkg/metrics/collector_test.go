@@ -10,6 +10,7 @@ import (
 	lxd "github.com/lxc/lxd/client"
 	lxdapi "github.com/lxc/lxd/shared/api"
 	mockclient "github.com/nieltg/lxd_exporter/test/mock_client"
+	"github.com/nieltg/prom-example-testutil/pkg/testutil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 )
@@ -102,4 +103,23 @@ func Test_collector_Describe(t *testing.T) {
 	close(ch)
 
 	assert.True(t, <-containsValueChannel)
+}
+
+func Example_collector_cpuUsage() {
+	controller, logger, server := prepare(nil)
+	defer controller.Finish()
+	server.EXPECT().GetContainerNames().Return([]string{"box0"}, nil).AnyTimes()
+	server.EXPECT().GetContainerState("box0").Return(
+		&lxdapi.ContainerState{
+			CPU: lxdapi.ContainerStateCPU{
+				Usage: 98,
+			},
+		}, "", nil)
+
+	collector := NewCollector(logger, server)
+	testutil.CollectAndPrint(collector, "lxd_container_cpu_usage")
+	// Output:
+	// # HELP lxd_container_cpu_usage Container CPU Usage in Seconds
+	// # TYPE lxd_container_cpu_usage gauge
+	// lxd_container_cpu_usage{container_name="box0"} 98
 }

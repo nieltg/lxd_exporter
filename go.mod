@@ -9,6 +9,7 @@ require (
 	github.com/juju/webbrowser v1.0.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
 	github.com/lxc/lxd v0.0.0-20191027145841-f86d0d25e54b
+	github.com/nieltg/prom-example-testutil v0.0.0-20191028084913-c70c55308302
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/common v0.7.0
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
