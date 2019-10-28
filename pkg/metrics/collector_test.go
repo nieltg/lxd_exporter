@@ -17,11 +17,20 @@ func drain(ch <-chan prometheus.Metric) {
 	}
 }
 
+func prepare(t gomock.TestReporter) (
+	controller *gomock.Controller,
+	logger *log.Logger,
+	server *mockclient.MockInstanceServer,
+) {
+	controller = gomock.NewController(t)
+	logger = log.New(os.Stdout, "lxd_exporter: ", 0)
+	server = mockclient.NewMockInstanceServer(controller)
+	return
+}
+
 func Example_collector_Collect_containerNamesError() {
-	controller := gomock.NewController(nil)
+	controller, logger, server := prepare(nil)
 	defer controller.Finish()
-	logger := log.New(os.Stdout, "lxd_exporter: ", 0)
-	server := mockclient.NewMockInstanceServer(controller)
 	server.EXPECT().GetContainerNames().Return(nil, fmt.Errorf("fail")).AnyTimes()
 
 	ch := make(chan prometheus.Metric)
@@ -33,10 +42,8 @@ func Example_collector_Collect_containerNamesError() {
 }
 
 func Test_collector_Collect_queryContainerState(t *testing.T) {
-	controller := gomock.NewController(t)
+	controller, logger, server := prepare(t)
 	defer controller.Finish()
-	logger := log.New(os.Stdout, "lxd_exporter: ", 0)
-	server := mockclient.NewMockInstanceServer(controller)
 	server.EXPECT().GetContainerNames().Return([]string{"box0"}, nil).AnyTimes()
 	server.EXPECT().GetContainerState("box0").Return(
 		&lxdapi.ContainerState{}, "", nil)
@@ -48,10 +55,8 @@ func Test_collector_Collect_queryContainerState(t *testing.T) {
 }
 
 func Test_collector_Collect_queryContainerStates(t *testing.T) {
-	controller := gomock.NewController(t)
+	controller, logger, server := prepare(t)
 	defer controller.Finish()
-	logger := log.New(os.Stdout, "lxd_exporter: ", 0)
-	server := mockclient.NewMockInstanceServer(controller)
 	server.EXPECT().GetContainerNames().Return([]string{
 		"box0",
 		"box1",
@@ -68,10 +73,8 @@ func Test_collector_Collect_queryContainerStates(t *testing.T) {
 }
 
 func Example_collector_Collect_containerStateError() {
-	controller := gomock.NewController(nil)
+	controller, logger, server := prepare(nil)
 	defer controller.Finish()
-	logger := log.New(os.Stdout, "lxd_exporter: ", 0)
-	server := mockclient.NewMockInstanceServer(controller)
 	server.EXPECT().GetContainerNames().Return([]string{"box0"}, nil).AnyTimes()
 	server.EXPECT().GetContainerState(gomock.Any()).Return(
 		nil, "", fmt.Errorf("fail")).AnyTimes()
