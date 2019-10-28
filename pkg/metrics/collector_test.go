@@ -7,15 +7,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	lxd "github.com/lxc/lxd/client"
 	lxdapi "github.com/lxc/lxd/shared/api"
 	mockclient "github.com/nieltg/lxd_exporter/test/mock_client"
 	"github.com/prometheus/client_golang/prometheus"
 )
-
-func drain(ch <-chan prometheus.Metric) {
-	for range ch {
-	}
-}
 
 func prepare(t gomock.TestReporter) (
 	controller *gomock.Controller,
@@ -28,15 +24,23 @@ func prepare(t gomock.TestReporter) (
 	return
 }
 
+func collect(logger *log.Logger, server lxd.InstanceServer) {
+	ch := make(chan prometheus.Metric)
+	go func() {
+		for range ch {
+		}
+	}()
+
+	NewCollector(logger, server).Collect(ch)
+	close(ch)
+}
+
 func Example_collector_Collect_containerNamesError() {
 	controller, logger, server := prepare(nil)
 	defer controller.Finish()
 	server.EXPECT().GetContainerNames().Return(nil, fmt.Errorf("fail")).AnyTimes()
 
-	ch := make(chan prometheus.Metric)
-	go drain(ch)
-	NewCollector(logger, server).Collect(ch)
-	close(ch)
+	collect(logger, server)
 	// Output:
 	// lxd_exporter: Can't query container names: fail
 }
@@ -48,10 +52,7 @@ func Test_collector_Collect_queryContainerState(t *testing.T) {
 	server.EXPECT().GetContainerState("box0").Return(
 		&lxdapi.ContainerState{}, "", nil)
 
-	ch := make(chan prometheus.Metric)
-	go drain(ch)
-	NewCollector(logger, server).Collect(ch)
-	close(ch)
+	collect(logger, server)
 }
 
 func Test_collector_Collect_queryContainerStates(t *testing.T) {
@@ -66,10 +67,7 @@ func Test_collector_Collect_queryContainerStates(t *testing.T) {
 	server.EXPECT().GetContainerState("box1").Return(
 		&lxdapi.ContainerState{}, "", nil)
 
-	ch := make(chan prometheus.Metric)
-	go drain(ch)
-	NewCollector(logger, server).Collect(ch)
-	close(ch)
+	collect(logger, server)
 }
 
 func Example_collector_Collect_containerStateError() {
@@ -79,10 +77,7 @@ func Example_collector_Collect_containerStateError() {
 	server.EXPECT().GetContainerState(gomock.Any()).Return(
 		nil, "", fmt.Errorf("fail")).AnyTimes()
 
-	ch := make(chan prometheus.Metric)
-	go drain(ch)
-	NewCollector(logger, server).Collect(ch)
-	close(ch)
+	collect(logger, server)
 	// Output:
 	// lxd_exporter: Can't query container state for `box0`: fail
 }
