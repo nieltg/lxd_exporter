@@ -11,6 +11,7 @@ import (
 	lxdapi "github.com/lxc/lxd/shared/api"
 	mockclient "github.com/nieltg/lxd_exporter/test/mock_client"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/stretchr/testify/assert"
 )
 
 func prepare(t gomock.TestReporter) (
@@ -80,4 +81,25 @@ func Example_collector_Collect_containerStateError() {
 	collect(logger, server)
 	// Output:
 	// lxd_exporter: Can't query container state for `box0`: fail
+}
+
+func Test_collector_Describe(t *testing.T) {
+	controller, logger, server := prepare(t)
+	defer controller.Finish()
+
+	containsValueChannel := make(chan bool)
+	ch := make(chan *prometheus.Desc)
+	go func() {
+		containsValue := false
+		for range ch {
+			if ch != nil {
+				containsValue = true
+			}
+		}
+		containsValueChannel <- containsValue
+	}()
+	NewCollector(logger, server).Describe(ch)
+	close(ch)
+
+	assert.True(t, <-containsValueChannel)
 }
