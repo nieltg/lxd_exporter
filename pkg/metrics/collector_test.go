@@ -184,3 +184,18 @@ func Example_collector_swapUsage() {
 	// # TYPE lxd_container_swap_usage gauge
 	// lxd_container_swap_usage{container_name="box0"} 10
 }
+
+func Example_collector_swapUsagePeak() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Memory: lxdapi.ContainerStateMemory{
+			SwapUsagePeak: 20,
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_swap_usage_peak")
+	// Output:
+	// # HELP lxd_container_swap_usage_peak Container Swap Usage Peak
+	// # TYPE lxd_container_swap_usage_peak gauge
+	// lxd_container_swap_usage_peak{container_name="box0"} 20
+}
