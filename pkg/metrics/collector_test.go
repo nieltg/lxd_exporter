@@ -105,21 +105,52 @@ func Test_collector_Describe(t *testing.T) {
 	assert.True(t, <-containsValueChannel)
 }
 
-func Example_collector_cpuUsage() {
-	controller, logger, server := prepare(nil)
-	defer controller.Finish()
+func prepareSingle(t gomock.TestReporter, state *lxdapi.ContainerState) (
+	controller *gomock.Controller,
+	logger *log.Logger,
+	server *mockclient.MockInstanceServer,
+) {
+	controller, logger, server = prepare(nil)
 	server.EXPECT().GetContainerNames().Return([]string{"box0"}, nil).AnyTimes()
-	server.EXPECT().GetContainerState("box0").Return(
-		&lxdapi.ContainerState{
-			CPU: lxdapi.ContainerStateCPU{
-				Usage: 98,
-			},
-		}, "", nil)
+	server.EXPECT().GetContainerState("box0").Return(state, "", nil)
+	return
+}
 
+func collectAndPrint(
+	logger *log.Logger,
+	server lxd.InstanceServer,
+	names ...string,
+) {
 	collector := NewCollector(logger, server)
-	testutil.CollectAndPrint(collector, "lxd_container_cpu_usage")
+	testutil.CollectAndPrint(collector, names...)
+}
+
+func Example_collector_cpuUsage() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		CPU: lxdapi.ContainerStateCPU{
+			Usage: 98,
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_cpu_usage")
 	// Output:
 	// # HELP lxd_container_cpu_usage Container CPU Usage in Seconds
 	// # TYPE lxd_container_cpu_usage gauge
 	// lxd_container_cpu_usage{container_name="box0"} 98
+}
+
+func Example_collector_memUsage() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Memory: lxdapi.ContainerStateMemory{
+			Usage: 30,
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_mem_usage")
+	// Output:
+	// # HELP lxd_container_mem_usage Container Memory Usage
+	// # TYPE lxd_container_mem_usage gauge
+	// lxd_container_mem_usage{container_name="box0"} 30
 }
