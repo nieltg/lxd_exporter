@@ -225,3 +225,16 @@ func Example_collector_containerPID() {
 	// # TYPE lxd_container_pid gauge
 	// lxd_container_pid{container_name="box0"} 90
 }
+
+func Example_collector_runningStatus() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Status: "Running",
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_running_status")
+	// Output:
+	// # HELP lxd_container_running_status Container Running Status
+	// # TYPE lxd_container_running_status gauge
+	// lxd_container_running_status{container_name="box0"} 1
+}
