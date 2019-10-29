@@ -14,6 +14,7 @@ require (
 	github.com/prometheus/common v0.7.0
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
+	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/errgo.v1 v1.0.1 // indirect
 	gopkg.in/httprequest.v1 v1.2.0 // indirect
 	gopkg.in/macaroon-bakery.v2 v2.1.0 // indirect
