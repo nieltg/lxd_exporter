@@ -1,0 +1,26 @@
+language: go
+go:
+  - "1.13"
+
+before_install:
+  - go get github.com/mattn/goveralls
+script:
+  - $GOPATH/bin/goveralls -service=travis-ci
+
+before_deploy:
+  - GOOS=linux GOARCH=amd64
+  - BUILD_TAG="lxd_exporter-${TRAVIS_TAG:1}.$GOOS-$GOARCH"
+  - BUILD_VER="${TRAVIS_TAG:1}-${TRAVIS_COMMIT:0:7}"
+  - umask 022
+  - mkdir "$BUILD_TAG/"
+  - go build -o "$BUILD_TAG/" -ldflags "-X main.version=$BUILD_VER" ./...
+  - tar -cJf "$BUILD_TAG.tar.xz" "$BUILD_TAG/"
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file:
+    - lxd_exporter-*,tar.xz
+  on:
+    tags: true
+    condition: $TRAVIS_TAG =~ ^v.+$
