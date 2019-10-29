@@ -100,8 +100,8 @@ func (collector *collector) collectContainerMetrics(
 	containerName string,
 	state *lxdapi.ContainerState,
 ) {
-	ch <- prometheus.MustNewConstMetric(
-		cpuUsageDesc, prometheus.GaugeValue, float64(state.CPU.Usage), containerName)
+	collector.collectCPUMetrics(ch, containerName, state.CPU)
+
 	ch <- prometheus.MustNewConstMetric(
 		memUsageDesc, prometheus.GaugeValue, float64(state.Memory.Usage), containerName)
 	ch <- prometheus.MustNewConstMetric(
@@ -143,4 +143,13 @@ func (collector *collector) collectContainerMetrics(
 				prometheus.GaugeValue, float64(value), containerName, ethName, metricName)
 		}
 	}
+}
+
+func (collector *collector) collectCPUMetrics(
+	ch chan<- prometheus.Metric,
+	containerName string,
+	cpuState lxdapi.ContainerStateCPU,
+) {
+	ch <- prometheus.MustNewConstMetric(
+		cpuUsageDesc, prometheus.GaugeValue, float64(cpuState.Usage), containerName)
 }
