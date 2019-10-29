@@ -51,6 +51,10 @@ var runningStatusDesc = prometheus.NewDesc("lxd_container_running_status",
 	"Container Running Status",
 	[]string{"container_name"}, nil,
 )
+var diskUsageDesc = prometheus.NewDesc("lxd_container_disk_usage",
+	"Container Disk Usage",
+	[]string{"container_name", "disk_device"}, nil,
+)
 
 // Describe ...
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
@@ -62,6 +66,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- processCountDesc
 	ch <- containerPIDDesc
 	ch <- runningStatusDesc
+	ch <- diskUsageDesc
 }
 
 // Collect ...
@@ -104,5 +109,8 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		}
 		ch <- prometheus.MustNewConstMetric(
 			runningStatusDesc, prometheus.GaugeValue, float64(runningStatus), name)
+
+		ch <- prometheus.MustNewConstMetric(diskUsageDesc,
+			prometheus.GaugeValue, float64(state.Disk["sda1"].Usage), name, "sda1")
 	}
 }

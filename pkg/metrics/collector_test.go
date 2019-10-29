@@ -251,3 +251,20 @@ func Example_collector_runningStatus_notRunning() {
 	// # TYPE lxd_container_running_status gauge
 	// lxd_container_running_status{container_name="box0"} 0
 }
+
+func Example_collector_diskUsage() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Disk: map[string]lxdapi.ContainerStateDisk{
+			"sda1": lxdapi.ContainerStateDisk{
+				Usage: 13500,
+			},
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_disk_usage")
+	// Output:
+	// # HELP lxd_container_disk_usage Container Disk Usage
+	// # TYPE lxd_container_disk_usage gauge
+	// lxd_container_disk_usage{container_name="box0",disk_device="sda1"} 13500
+}
