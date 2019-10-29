@@ -140,6 +140,29 @@ func Example_collector_cpuUsage() {
 	// lxd_container_cpu_usage{container_name="box0"} 98
 }
 
+func Example_collector_Collect_continueIfError() {
+	controller, logger, server := prepare(nil)
+	server.EXPECT().GetContainerNames().Return([]string{
+		"box0",
+		"box1",
+	}, nil).AnyTimes()
+	server.EXPECT().GetContainerState("box0").Return(
+		nil, "", fmt.Errorf("fail")).AnyTimes()
+	server.EXPECT().GetContainerState("box1").Return(&lxdapi.ContainerState{
+		CPU: lxdapi.ContainerStateCPU{
+			Usage: 21,
+		},
+	}, "", nil).AnyTimes()
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_cpu_usage")
+	// Output:
+	// lxd_exporter: Can't query container state for `box0`: fail
+	// # HELP lxd_container_cpu_usage Container CPU Usage in Seconds
+	// # TYPE lxd_container_cpu_usage gauge
+	// lxd_container_cpu_usage{container_name="box1"} 21
+}
+
 func Example_collector_memUsage() {
 	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
 		Memory: lxdapi.ContainerStateMemory{
