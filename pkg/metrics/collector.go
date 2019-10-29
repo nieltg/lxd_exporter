@@ -102,12 +102,7 @@ func (collector *collector) collectContainerMetrics(
 ) {
 	collector.collectCPUMetrics(ch, containerName, state.CPU)
 	collector.collectMemoryMetrics(ch, containerName, state.Memory)
-
-	ch <- prometheus.MustNewConstMetric(
-		processCountDesc, prometheus.GaugeValue, float64(state.Processes), containerName)
-	ch <- prometheus.MustNewConstMetric(
-		containerPIDDesc, prometheus.GaugeValue, float64(state.Pid), containerName)
-
+	collector.collectProcessMetrics(ch, containerName, state)
 	collector.collectRunningStatusMetrics(ch, containerName, state.Status)
 	collector.collectDiskMetrics(ch, containerName, state.Disk)
 	collector.collectNetworkMetrics(ch, containerName, state.Network)
