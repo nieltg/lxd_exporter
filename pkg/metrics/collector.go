@@ -120,15 +120,18 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 				prometheus.GaugeValue, float64(diskState.Usage), name, diskName)
 		}
 
-		networkMetrics := map[string]int64{
-			"BytesReceived":   state.Network["eth0"].Counters.BytesReceived,
-			"BytesSent":       state.Network["eth0"].Counters.BytesSent,
-			"PacketsReceived": state.Network["eth0"].Counters.PacketsReceived,
-			"PacketsSent":     state.Network["eth0"].Counters.PacketsSent,
-		}
-		for metricName, value := range networkMetrics {
-			ch <- prometheus.MustNewConstMetric(networkUsageDesc,
-				prometheus.GaugeValue, float64(value), name, "eth0", metricName)
+		for ethName, netState := range state.Network {
+			networkMetrics := map[string]int64{
+				"BytesReceived":   netState.Counters.BytesReceived,
+				"BytesSent":       netState.Counters.BytesSent,
+				"PacketsReceived": netState.Counters.PacketsReceived,
+				"PacketsSent":     netState.Counters.PacketsSent,
+			}
+
+			for metricName, value := range networkMetrics {
+				ch <- prometheus.MustNewConstMetric(networkUsageDesc,
+					prometheus.GaugeValue, float64(value), name, ethName, metricName)
+			}
 		}
 	}
 }

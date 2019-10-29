@@ -314,3 +314,40 @@ func Example_collector_networkUsage() {
 	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="PacketsReceived"} 750
 	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="PacketsSent"} 1442
 }
+
+func Example_collector_networkUsage_multiple() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Network: map[string]lxdapi.ContainerStateNetwork{
+			"eth0": lxdapi.ContainerStateNetwork{
+				Counters: lxdapi.ContainerStateNetworkCounters{
+					BytesReceived:   485000,
+					BytesSent:       741000,
+					PacketsReceived: 750,
+					PacketsSent:     1442,
+				},
+			},
+			"eth1": lxdapi.ContainerStateNetwork{
+				Counters: lxdapi.ContainerStateNetworkCounters{
+					BytesReceived:   342000,
+					BytesSent:       114000,
+					PacketsReceived: 538,
+					PacketsSent:     221,
+				},
+			},
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_network_usage")
+	// Output:
+	// # HELP lxd_container_network_usage Container Network Usage
+	// # TYPE lxd_container_network_usage gauge
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="BytesReceived"} 485000
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="BytesSent"} 741000
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="PacketsReceived"} 750
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="PacketsSent"} 1442
+	// lxd_container_network_usage{container_name="box0",interface="eth1",operation="BytesReceived"} 342000
+	// lxd_container_network_usage{container_name="box0",interface="eth1",operation="BytesSent"} 114000
+	// lxd_container_network_usage{container_name="box0",interface="eth1",operation="PacketsReceived"} 538
+	// lxd_container_network_usage{container_name="box0",interface="eth1",operation="PacketsSent"} 221
+}
