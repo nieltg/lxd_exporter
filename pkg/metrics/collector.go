@@ -110,7 +110,9 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			runningStatusDesc, prometheus.GaugeValue, float64(runningStatus), name)
 
-		ch <- prometheus.MustNewConstMetric(diskUsageDesc,
-			prometheus.GaugeValue, float64(state.Disk["sda1"].Usage), name, "sda1")
+		for diskName, diskState := range state.Disk {
+			ch <- prometheus.MustNewConstMetric(diskUsageDesc,
+				prometheus.GaugeValue, float64(diskState.Usage), name, diskName)
+		}
 	}
 }

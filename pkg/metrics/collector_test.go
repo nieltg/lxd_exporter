@@ -268,3 +268,24 @@ func Example_collector_diskUsage() {
 	// # TYPE lxd_container_disk_usage gauge
 	// lxd_container_disk_usage{container_name="box0",disk_device="sda1"} 13500
 }
+
+func Example_collector_diskUsage_multiple() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Disk: map[string]lxdapi.ContainerStateDisk{
+			"sda1": lxdapi.ContainerStateDisk{
+				Usage: 13500,
+			},
+			"sda2": lxdapi.ContainerStateDisk{
+				Usage: 17200,
+			},
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_disk_usage")
+	// Output:
+	// # HELP lxd_container_disk_usage Container Disk Usage
+	// # TYPE lxd_container_disk_usage gauge
+	// lxd_container_disk_usage{container_name="box0",disk_device="sda1"} 13500
+	// lxd_container_disk_usage{container_name="box0",disk_device="sda2"} 17200
+}
