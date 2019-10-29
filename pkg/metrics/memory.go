@@ -5,6 +5,26 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+var (
+	memUsageDesc = prometheus.NewDesc("lxd_container_mem_usage",
+		"Container Memory Usage",
+		[]string{"container_name"}, nil,
+	)
+	memUsagePeakDesc = prometheus.NewDesc("lxd_container_mem_usage_peak",
+		"Container Memory Usage Peak",
+		[]string{"container_name"}, nil,
+	)
+
+	swapUsageDesc = prometheus.NewDesc("lxd_container_swap_usage",
+		"Container Swap Usage",
+		[]string{"container_name"}, nil,
+	)
+	swapUsagePeakDesc = prometheus.NewDesc("lxd_container_swap_usage_peak",
+		"Container Swap Usage Peak",
+		[]string{"container_name"}, nil,
+	)
+)
+
 func (collector *collector) collectMemoryMetrics(
 	ch chan<- prometheus.Metric,
 	containerName string,

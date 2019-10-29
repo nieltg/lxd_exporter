@@ -20,47 +20,6 @@ func NewCollector(
 	return &collector{logger: logger, server: server}
 }
 
-var cpuUsageDesc = prometheus.NewDesc("lxd_container_cpu_usage",
-	"Container CPU Usage in Seconds",
-	[]string{"container_name"}, nil,
-)
-var memUsageDesc = prometheus.NewDesc("lxd_container_mem_usage",
-	"Container Memory Usage",
-	[]string{"container_name"}, nil,
-)
-var memUsagePeakDesc = prometheus.NewDesc("lxd_container_mem_usage_peak",
-	"Container Memory Usage Peak",
-	[]string{"container_name"}, nil,
-)
-var swapUsageDesc = prometheus.NewDesc("lxd_container_swap_usage",
-	"Container Swap Usage",
-	[]string{"container_name"}, nil,
-)
-var swapUsagePeakDesc = prometheus.NewDesc("lxd_container_swap_usage_peak",
-	"Container Swap Usage Peak",
-	[]string{"container_name"}, nil,
-)
-var processCountDesc = prometheus.NewDesc("lxd_container_process_count",
-	"Container number of process Running",
-	[]string{"container_name"}, nil,
-)
-var containerPIDDesc = prometheus.NewDesc("lxd_container_pid",
-	"Container PID",
-	[]string{"container_name"}, nil,
-)
-var runningStatusDesc = prometheus.NewDesc("lxd_container_running_status",
-	"Container Running Status",
-	[]string{"container_name"}, nil,
-)
-var diskUsageDesc = prometheus.NewDesc("lxd_container_disk_usage",
-	"Container Disk Usage",
-	[]string{"container_name", "disk_device"}, nil,
-)
-var networkUsageDesc = prometheus.NewDesc("lxd_container_network_usage",
-	"Container Network Usage",
-	[]string{"container_name", "interface", "operation"}, nil,
-)
-
 // Describe ...
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- cpuUsageDesc

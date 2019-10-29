@@ -4,6 +4,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+var runningStatusDesc = prometheus.NewDesc("lxd_container_running_status",
+	"Container Running Status",
+	[]string{"container_name"}, nil,
+)
+
 func (collector *collector) collectRunningStatusMetrics(
 	ch chan<- prometheus.Metric, containerName string, status string) {
 	runningStatus := 0
