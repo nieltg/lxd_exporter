@@ -108,13 +108,7 @@ func (collector *collector) collectContainerMetrics(
 	ch <- prometheus.MustNewConstMetric(
 		containerPIDDesc, prometheus.GaugeValue, float64(state.Pid), containerName)
 
-	runningStatus := 0
-	if state.Status == "Running" {
-		runningStatus = 1
-	}
-	ch <- prometheus.MustNewConstMetric(
-		runningStatusDesc, prometheus.GaugeValue, float64(runningStatus), containerName)
-
+	collector.collectRunningStatusMetrics(ch, containerName, state.Status)
 	collector.collectDiskMetrics(ch, containerName, state.Disk)
 	collector.collectNetworkMetrics(ch, containerName, state.Network)
 }
