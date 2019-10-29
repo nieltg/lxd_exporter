@@ -14,8 +14,7 @@ import (
 )
 
 var (
-	version   = "staging"
-	commitSHA = "UNVERSIONED"
+	version = "staging-UNVERSIONED"
 
 	port = kingpin.Arg(
 		"port", "Provide the port to listen on").Default("8080").Int16()
@@ -24,7 +23,7 @@ var (
 func main() {
 	logger := log.New(os.Stderr, "lxd_exporter: ", log.LstdFlags)
 
-	kingpin.Version(fmt.Sprintf("%s-%s", version, commitSHA))
+	kingpin.Version(version)
 	kingpin.Parse()
 
 	server, err := lxd.ConnectLXDUnix("", nil)
