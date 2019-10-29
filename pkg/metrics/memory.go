@@ -11,11 +11,7 @@ func (collector *collector) collectMemoryMetrics(
 	memState lxdapi.ContainerStateMemory,
 ) {
 	collector.collectRAMMetrics(ch, containerName, memState)
-
-	ch <- prometheus.MustNewConstMetric(swapUsageDesc,
-		prometheus.GaugeValue, float64(memState.SwapUsage), containerName)
-	ch <- prometheus.MustNewConstMetric(swapUsagePeakDesc,
-		prometheus.GaugeValue, float64(memState.SwapUsagePeak), containerName)
+	collector.collectSwapMetrics(ch, containerName, memState)
 }
 
 func (collector *collector) collectRAMMetrics(
@@ -27,4 +23,15 @@ func (collector *collector) collectRAMMetrics(
 		memUsageDesc, prometheus.GaugeValue, float64(memState.Usage), containerName)
 	ch <- prometheus.MustNewConstMetric(memUsagePeakDesc,
 		prometheus.GaugeValue, float64(memState.UsagePeak), containerName)
+}
+
+func (collector *collector) collectSwapMetrics(
+	ch chan<- prometheus.Metric,
+	containerName string,
+	memState lxdapi.ContainerStateMemory,
+) {
+	ch <- prometheus.MustNewConstMetric(swapUsageDesc,
+		prometheus.GaugeValue, float64(memState.SwapUsage), containerName)
+	ch <- prometheus.MustNewConstMetric(swapUsagePeakDesc,
+		prometheus.GaugeValue, float64(memState.SwapUsagePeak), containerName)
 }
