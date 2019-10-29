@@ -4,6 +4,7 @@ import (
 	"log"
 
 	lxd "github.com/lxc/lxd/client"
+	lxdapi "github.com/lxc/lxd/shared/api"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -76,62 +77,70 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect ...
 func (collector *collector) Collect(ch chan<- prometheus.Metric) {
-	names, err := collector.server.GetContainerNames()
+	containerNames, err := collector.server.GetContainerNames()
 	if err != nil {
 		collector.logger.Printf("Can't query container names: %s", err)
 		return
 	}
 
-	for _, name := range names {
-		state, _, err := collector.server.GetContainerState(name)
+	for _, containerName := range containerNames {
+		state, _, err := collector.server.GetContainerState(containerName)
 		if err != nil {
 			collector.logger.Printf(
-				"Can't query container state for `%s`: %s", name, err)
+				"Can't query container state for `%s`: %s", containerName, err)
 			break
 		}
 
-		ch <- prometheus.MustNewConstMetric(
-			cpuUsageDesc, prometheus.GaugeValue, float64(state.CPU.Usage), name)
-		ch <- prometheus.MustNewConstMetric(
-			memUsageDesc, prometheus.GaugeValue, float64(state.Memory.Usage), name)
-		ch <- prometheus.MustNewConstMetric(
-			memUsagePeakDesc, prometheus.GaugeValue, float64(state.Memory.UsagePeak),
-			name)
-		ch <- prometheus.MustNewConstMetric(
-			swapUsageDesc, prometheus.GaugeValue, float64(state.Memory.SwapUsage),
-			name)
-		ch <- prometheus.MustNewConstMetric(
-			swapUsagePeakDesc, prometheus.GaugeValue, float64(
-				state.Memory.SwapUsagePeak), name)
-		ch <- prometheus.MustNewConstMetric(
-			processCountDesc, prometheus.GaugeValue, float64(state.Processes), name)
-		ch <- prometheus.MustNewConstMetric(
-			containerPIDDesc, prometheus.GaugeValue, float64(state.Pid), name)
+		collector.collectContainerMetrics(ch, containerName, state)
+	}
+}
 
-		runningStatus := 0
-		if state.Status == "Running" {
-			runningStatus = 1
+func (collector *collector) collectContainerMetrics(
+	ch chan<- prometheus.Metric,
+	containerName string,
+	state *lxdapi.ContainerState,
+) {
+	ch <- prometheus.MustNewConstMetric(
+		cpuUsageDesc, prometheus.GaugeValue, float64(state.CPU.Usage), containerName)
+	ch <- prometheus.MustNewConstMetric(
+		memUsageDesc, prometheus.GaugeValue, float64(state.Memory.Usage), containerName)
+	ch <- prometheus.MustNewConstMetric(
+		memUsagePeakDesc, prometheus.GaugeValue, float64(state.Memory.UsagePeak),
+		containerName)
+	ch <- prometheus.MustNewConstMetric(
+		swapUsageDesc, prometheus.GaugeValue, float64(state.Memory.SwapUsage),
+		containerName)
+	ch <- prometheus.MustNewConstMetric(
+		swapUsagePeakDesc, prometheus.GaugeValue, float64(
+			state.Memory.SwapUsagePeak), containerName)
+	ch <- prometheus.MustNewConstMetric(
+		processCountDesc, prometheus.GaugeValue, float64(state.Processes), containerName)
+	ch <- prometheus.MustNewConstMetric(
+		containerPIDDesc, prometheus.GaugeValue, float64(state.Pid), containerName)
+
+	runningStatus := 0
+	if state.Status == "Running" {
+		runningStatus = 1
+	}
+	ch <- prometheus.MustNewConstMetric(
+		runningStatusDesc, prometheus.GaugeValue, float64(runningStatus), containerName)
+
+	for diskName, diskState := range state.Disk {
+		ch <- prometheus.MustNewConstMetric(diskUsageDesc,
+			prometheus.GaugeValue, float64(diskState.Usage), containerName, diskName)
+	}
+
+	for ethName, netState := range state.Network {
+		networkMetrics := map[string]int64{
+			"BytesReceived":   netState.Counters.BytesReceived,
+			"BytesSent":       netState.Counters.BytesSent,
+			"PacketsReceived": netState.Counters.PacketsReceived,
+			"PacketsSent":     netState.Counters.PacketsSent,
 		}
-		ch <- prometheus.MustNewConstMetric(
-			runningStatusDesc, prometheus.GaugeValue, float64(runningStatus), name)
 
-		for diskName, diskState := range state.Disk {
-			ch <- prometheus.MustNewConstMetric(diskUsageDesc,
-				prometheus.GaugeValue, float64(diskState.Usage), name, diskName)
-		}
-
-		for ethName, netState := range state.Network {
-			networkMetrics := map[string]int64{
-				"BytesReceived":   netState.Counters.BytesReceived,
-				"BytesSent":       netState.Counters.BytesSent,
-				"PacketsReceived": netState.Counters.PacketsReceived,
-				"PacketsSent":     netState.Counters.PacketsSent,
-			}
-
-			for metricName, value := range networkMetrics {
-				ch <- prometheus.MustNewConstMetric(networkUsageDesc,
-					prometheus.GaugeValue, float64(value), name, ethName, metricName)
-			}
+		for metricName, value := range networkMetrics {
+			ch <- prometheus.MustNewConstMetric(networkUsageDesc,
+				prometheus.GaugeValue, float64(value), containerName, ethName, metricName)
 		}
 	}
 }
