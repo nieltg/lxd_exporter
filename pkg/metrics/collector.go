@@ -101,18 +101,8 @@ func (collector *collector) collectContainerMetrics(
 	state *lxdapi.ContainerState,
 ) {
 	collector.collectCPUMetrics(ch, containerName, state.CPU)
+	collector.collectMemoryMetrics(ch, containerName, state.Memory)
 
-	ch <- prometheus.MustNewConstMetric(
-		memUsageDesc, prometheus.GaugeValue, float64(state.Memory.Usage), containerName)
-	ch <- prometheus.MustNewConstMetric(
-		memUsagePeakDesc, prometheus.GaugeValue, float64(state.Memory.UsagePeak),
-		containerName)
-	ch <- prometheus.MustNewConstMetric(
-		swapUsageDesc, prometheus.GaugeValue, float64(state.Memory.SwapUsage),
-		containerName)
-	ch <- prometheus.MustNewConstMetric(
-		swapUsagePeakDesc, prometheus.GaugeValue, float64(
-			state.Memory.SwapUsagePeak), containerName)
 	ch <- prometheus.MustNewConstMetric(
 		processCountDesc, prometheus.GaugeValue, float64(state.Processes), containerName)
 	ch <- prometheus.MustNewConstMetric(
@@ -143,13 +133,4 @@ func (collector *collector) collectContainerMetrics(
 				prometheus.GaugeValue, float64(value), containerName, ethName, metricName)
 		}
 	}
-}
-
-func (collector *collector) collectCPUMetrics(
-	ch chan<- prometheus.Metric,
-	containerName string,
-	cpuState lxdapi.ContainerStateCPU,
-) {
-	ch <- prometheus.MustNewConstMetric(
-		cpuUsageDesc, prometheus.GaugeValue, float64(cpuState.Usage), containerName)
 }
