@@ -289,3 +289,28 @@ func Example_collector_diskUsage_multiple() {
 	// lxd_container_disk_usage{container_name="box0",disk_device="sda1"} 13500
 	// lxd_container_disk_usage{container_name="box0",disk_device="sda2"} 17200
 }
+
+func Example_collector_networkUsage() {
+	controller, logger, server := prepareSingle(nil, &lxdapi.ContainerState{
+		Network: map[string]lxdapi.ContainerStateNetwork{
+			"eth0": lxdapi.ContainerStateNetwork{
+				Counters: lxdapi.ContainerStateNetworkCounters{
+					BytesReceived:   485000,
+					BytesSent:       741000,
+					PacketsReceived: 750,
+					PacketsSent:     1442,
+				},
+			},
+		},
+	})
+	defer controller.Finish()
+
+	collectAndPrint(logger, server, "lxd_container_network_usage")
+	// Output:
+	// # HELP lxd_container_network_usage Container Network Usage
+	// # TYPE lxd_container_network_usage gauge
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="BytesReceived"} 485000
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="BytesSent"} 741000
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="PacketsReceived"} 750
+	// lxd_container_network_usage{container_name="box0",interface="eth0",operation="PacketsSent"} 1442
+}

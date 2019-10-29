@@ -55,6 +55,10 @@ var diskUsageDesc = prometheus.NewDesc("lxd_container_disk_usage",
 	"Container Disk Usage",
 	[]string{"container_name", "disk_device"}, nil,
 )
+var networkUsageDesc = prometheus.NewDesc("lxd_container_network_usage",
+	"Container Network Usage",
+	[]string{"container_name", "interface", "operation"}, nil,
+)
 
 // Describe ...
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
@@ -67,6 +71,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- containerPIDDesc
 	ch <- runningStatusDesc
 	ch <- diskUsageDesc
+	ch <- networkUsageDesc
 }
 
 // Collect ...
@@ -113,6 +118,17 @@ func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 		for diskName, diskState := range state.Disk {
 			ch <- prometheus.MustNewConstMetric(diskUsageDesc,
 				prometheus.GaugeValue, float64(diskState.Usage), name, diskName)
+		}
+
+		networkMetrics := map[string]int64{
+			"BytesReceived":   state.Network["eth0"].Counters.BytesReceived,
+			"BytesSent":       state.Network["eth0"].Counters.BytesSent,
+			"PacketsReceived": state.Network["eth0"].Counters.PacketsReceived,
+			"PacketsSent":     state.Network["eth0"].Counters.PacketsSent,
+		}
+		for metricName, value := range networkMetrics {
+			ch <- prometheus.MustNewConstMetric(networkUsageDesc,
+				prometheus.GaugeValue, float64(value), name, "eth0", metricName)
 		}
 	}
 }
