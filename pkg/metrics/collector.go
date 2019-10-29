@@ -115,10 +115,7 @@ func (collector *collector) collectContainerMetrics(
 	ch <- prometheus.MustNewConstMetric(
 		runningStatusDesc, prometheus.GaugeValue, float64(runningStatus), containerName)
 
-	for diskName, diskState := range state.Disk {
-		ch <- prometheus.MustNewConstMetric(diskUsageDesc,
-			prometheus.GaugeValue, float64(diskState.Usage), containerName, diskName)
-	}
+	collector.collectDiskMetrics(ch, containerName, state.Disk)
 
 	for ethName, netState := range state.Network {
 		networkMetrics := map[string]int64{
