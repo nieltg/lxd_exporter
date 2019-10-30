@@ -9,7 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	lxd "github.com/lxc/lxd/client"
 	lxdapi "github.com/lxc/lxd/shared/api"
-	mockclient "github.com/nieltg/lxd_exporter/test/mock_client"
+	mockclient "github.com/nieltg/lxd_exporter/test/mockgen/mock_client"
 	"github.com/nieltg/prom-example-testutil/pkg/testutil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
