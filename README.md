@@ -15,7 +15,10 @@ Extract archive, then run the exporter:
 ./lxd_exporter
 ```
 
-The exporter must have access to LXD socket which can be guided by specifying `LXD_SOCKET` or `LXD_DIR` environment variable.
+The exporter must have access to LXD socket which can be guided by:
+- Specifying `LXD_SOCKET` environment variable to LXD socket path, or
+- Specifying `LXD_DIR` environment variable to LXD socket's parent directory.
+
 For more information, you can see the documentation from [Go LXD client library](https://godoc.org/github.com/lxc/lxd/client#ConnectLXDUnix).
 
 ## Hacking
