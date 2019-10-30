@@ -13,7 +13,7 @@ before_deploy:
   - BUILD_VER="${TRAVIS_TAG:1}-${TRAVIS_COMMIT:0:7}"
   - umask 022
   - mkdir "$BUILD_TAG/"
-  - go build -o "$BUILD_TAG/" -ldflags "-X main.version=$BUILD_VER" ./...
+  - go build -o "$BUILD_TAG/" -ldflags "-s -w -X main.version=$BUILD_VER" ./...
   - tar -cJf "$BUILD_TAG.tar.xz" "$BUILD_TAG/"
 deploy:
   provider: releases
