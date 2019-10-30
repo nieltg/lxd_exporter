@@ -8,19 +8,19 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Collector ...
+// Collector collects metrics to be sent to Prometheus.
 type collector struct {
 	logger *log.Logger
 	server lxd.InstanceServer
 }
 
-// NewCollector ...
+// NewCollector creates a new collector with logger and LXD connection.
 func NewCollector(
 	logger *log.Logger, server lxd.InstanceServer) prometheus.Collector {
 	return &collector{logger: logger, server: server}
 }
 
-// Describe ...
+// Describe fills given channel with metrics descriptor.
 func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- cpuUsageDesc
 	ch <- memUsageDesc
@@ -34,7 +34,7 @@ func (collector *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- networkUsageDesc
 }
 
-// Collect ...
+// Collect fills given channel with metrics data.
 func (collector *collector) Collect(ch chan<- prometheus.Metric) {
 	containerNames, err := collector.server.GetContainerNames()
 	if err != nil {
