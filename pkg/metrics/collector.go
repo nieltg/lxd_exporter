@@ -132,7 +132,7 @@ func (collector *collector) collectContainerMetrics(
 			prometheus.GaugeValue, float64(state.Usage), containerName, diskName)
 	}
 
-	for interfaceName, state := range state.Network {
+	for ethName, state := range state.Network {
 		networkMetrics := map[string]int64{
 			"BytesReceived":   state.Counters.BytesReceived,
 			"BytesSent":       state.Counters.BytesSent,
@@ -140,10 +140,9 @@ func (collector *collector) collectContainerMetrics(
 			"PacketsSent":     state.Counters.PacketsSent,
 		}
 
-		for metricName, value := range networkMetrics {
-			ch <- prometheus.MustNewConstMetric(
-				networkUsageDesc, prometheus.GaugeValue, float64(value),
-				containerName, interfaceName, metricName)
+		for opName, value := range networkMetrics {
+			ch <- prometheus.MustNewConstMetric(networkUsageDesc,
+				prometheus.GaugeValue, float64(value), containerName, ethName, opName)
 		}
 	}
 }
