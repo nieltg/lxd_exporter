@@ -5,7 +5,7 @@ go:
 before_install:
   - go get github.com/mattn/goveralls
 script:
-  - $GOPATH/bin/goveralls -service=travis-ci
+  - $GOPATH/bin/goveralls -ignore 'test/mockgen/*/**' -service=travis-ci
 
 before_deploy:
   - GOOS=linux GOARCH=amd64
