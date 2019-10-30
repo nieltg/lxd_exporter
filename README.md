@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/nieltg/lxd_exporter)](https://goreportcard.com/report/github.com/nieltg/lxd_exporter)
 [![Coverage Status](https://coveralls.io/repos/github/nieltg/lxd_exporter/badge.svg?branch=master)](https://coveralls.io/github/nieltg/lxd_exporter?branch=master)
 
-LXD metrics exporter for Prometheus.
+LXD metrics exporter for Prometheus. Improved version of [viveksing/lxdexporter_golang](https://github.com/viveksing/lxdexporter_golang).
 
 ## Usage
 
