@@ -18,9 +18,10 @@ before_deploy:
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
+  skip_cleanup: true
   file_glob: true
   file:
-    - lxd_exporter-*,tar.xz
+    - lxd_exporter-*.tar.xz
   on:
     tags: true
     condition: $TRAVIS_TAG =~ ^v.+$
