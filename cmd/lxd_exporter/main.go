@@ -17,7 +17,7 @@ var (
 	version = "staging-UNVERSIONED"
 
 	port = kingpin.Arg(
-		"port", "Provide the port to listen on").Default("8080").Int16()
+		"port", "Provide the port to listen on").Default("9472").Int16()
 )
 
 func main() {
