@@ -16,7 +16,7 @@ import (
 var (
 	version = "staging-UNVERSIONED"
 
-	port = kingpin.Arg(
+	port = kingpin.Flag(
 		"port", "Provide the port to listen on").Default("9472").Int16()
 )
 
